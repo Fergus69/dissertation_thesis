@@ -7,6 +7,7 @@ from model import build_model
 
 from dataset import AIDetectionDataset, train_transform, val_transform
 from evaluate import evaluate_model
+import matplotlib.pyplot as plt
 
 def get_real_data(dataset_path, weights=(0.70, 0.15, 0.15)):
     """
@@ -64,6 +65,32 @@ def get_real_data(dataset_path, weights=(0.70, 0.15, 0.15)):
 
     return train_paths, train_labels, val_paths, val_labels, test_paths, test_labels
 
+def save_learning_curves(history):
+    plt.figure(figsize=(12, 5))
+    
+    
+    plt.subplot(1, 2, 1)
+    plt.plot(history['train_loss'], label='Train Loss')
+    plt.plot(history['val_loss'], label='Val Loss')
+    plt.title('Evoluția Loss-ului')
+    plt.xlabel('Epocă')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.grid(True)
+
+    
+    plt.subplot(1, 2, 2)
+    plt.plot(history['val_acc'], label='Val Accuracy', color='green')
+    plt.title('Evoluția Acurateței (Validare)')
+    plt.xlabel('Epocă')
+    plt.ylabel('Acuratețe (%)')
+    plt.legend()
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.savefig('learning_curves.png', dpi=300)
+    print("\n[Grafic] 'learning_curves.png' a fost salvat.")
+
 def main():
     
     model, criterion, optimizer, device = build_model()
@@ -115,6 +142,13 @@ def main():
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=num_epochs)
     
     scaler = torch.amp.GradScaler()
+    
+    
+    history = {
+    'train_loss': [],
+    'val_loss': [],
+    'val_acc': []
+    }
     for epoch in range(num_epochs):
         model.train() 
         running_train_loss = 0.0
@@ -172,6 +206,10 @@ def main():
         
         scheduler.step()
         
+        history['train_loss'].append(epoch_train_loss)
+        history['val_loss'].append(epoch_val_loss)
+        history['val_acc'].append(val_accuracy)
+        
         
         if epoch_val_loss < best_val_loss:
             best_val_loss = epoch_val_loss
@@ -186,6 +224,7 @@ def main():
             print(f"\n[!] Early Stopping declanșat la epoca {epoch+1}. Modelul a atins potențialul maxim.")
             break
 
+    save_learning_curves(history)
     print("\nAntrenament finalizat! Se rulează evaluarea detaliată...")
 
     
