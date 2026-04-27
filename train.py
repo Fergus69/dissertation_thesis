@@ -78,14 +78,15 @@ def main():
     test_dataset = AIDetectionDataset(test_image_paths, test_labels, transform=val_transform)
 
     
-    batch_size = 32 
+    batch_size = 128 
     
     train_loader = DataLoader(
         train_dataset, 
         batch_size=batch_size, 
         shuffle=True, 
         num_workers=8, 
-        pin_memory=True 
+        pin_memory=True,
+        prefetch_factor=3
     )
     
     val_loader = DataLoader(
@@ -95,13 +96,25 @@ def main():
         num_workers=8,
         pin_memory=True
     )
+    
+    test_loader = DataLoader(
+        test_dataset, 
+        batch_size=batch_size, 
+        shuffle=False, 
+        num_workers=8,
+        pin_memory=True
+    )
 
     
-    num_epochs = 10
+    num_epochs = 50
+    patience = 7
+    patience_counter = 0
     best_val_loss = float('inf')
     save_path = 'best_model.pth'
-
     
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=num_epochs)
+    
+    scaler = torch.amp.GradScaler()
     for epoch in range(num_epochs):
         model.train() 
         running_train_loss = 0.0
@@ -112,13 +125,14 @@ def main():
 
             optimizer.zero_grad() 
             
+            with torch.autocast(device_type='cuda', dtype=torch.float16):
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+
             
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-            
-            
-            loss.backward()
-            optimizer.step()
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
             
             running_train_loss += loss.item() * images.size(0)
             
@@ -135,8 +149,9 @@ def main():
                 images = images.to(device)
                 labels = labels.to(device)
                 
-                outputs = model(images)
-                loss = criterion(outputs, labels)
+                with torch.autocast(device_type='cuda', dtype=torch.float16):
+                    outputs = model(images)
+                    loss = criterion(outputs, labels)
                 running_val_loss += loss.item() * images.size(0)
                 
                 
@@ -147,16 +162,29 @@ def main():
         epoch_val_loss = running_val_loss / len(val_loader.dataset)
         val_accuracy = 100.0 * correct_preds / total_samples
         
-        print(f'Epoca {epoch+1}/{num_epochs} | '
+        current_lr = scheduler.get_last_lr()[0]
+        
+        print(f'Epoca {epoch+1:02d}/{num_epochs} | '
+              f'LR: {current_lr:.6f} | '
               f'Train Loss: {epoch_train_loss:.4f} | '
               f'Val Loss: {epoch_val_loss:.4f} | '
               f'Val Acc: {val_accuracy:.2f}%')
+        
+        scheduler.step()
         
         
         if epoch_val_loss < best_val_loss:
             best_val_loss = epoch_val_loss
             torch.save(model.state_dict(), save_path)
             print(f'   -> Model salvat! (Val Loss a scăzut la {best_val_loss:.4f})')
+            patience_counter = 0 
+        else:
+            patience_counter += 1
+            print(f'   -> Nicio îmbunătățire. Răbdare: {patience_counter}/{patience}')
+            
+        if patience_counter >= patience:
+            print(f"\n[!] Early Stopping declanșat la epoca {epoch+1}. Modelul a atins potențialul maxim.")
+            break
 
     print("\nAntrenament finalizat! Se rulează evaluarea detaliată...")
 
@@ -165,7 +193,7 @@ def main():
     model.load_state_dict(torch.load(save_path))
     
     
-    evaluate_model(model, val_loader, device)
+    evaluate_model(model, test_loader, device)
 
 if __name__ == '__main__':
     main()

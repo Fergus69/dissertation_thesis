@@ -16,6 +16,6 @@ def build_model():
 
     
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4, weight_decay=1e-2)
     
     return model, criterion, optimizer, device
