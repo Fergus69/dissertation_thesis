@@ -10,14 +10,10 @@ from evaluate import evaluate_model
 import matplotlib.pyplot as plt
 
 def get_real_data(dataset_path, weights=(0.70, 0.15, 0.15)):
-    """
-    Citește imaginile dintr-un director structurat pe clase ('real' și 'ai')
-    și le împarte în Train, Val și Test conform standardului 70-15-15.
-    """
     train_w, val_w, test_w = weights
     
     
-    assert abs(train_w + val_w + test_w - 1.0) < 1e-5, "Ponderile trebuie să însumeze exact 1.0"
+    assert abs(train_w + val_w + test_w - 1.0) < 1e-5, "Weights must sum to 1.0"
 
     all_paths = []
     all_labels = []
@@ -30,25 +26,23 @@ def get_real_data(dataset_path, weights=(0.70, 0.15, 0.15)):
         class_dir = os.path.join(dataset_path, class_name)
         
         if not os.path.exists(class_dir):
-            raise FileNotFoundError(f"Nu găsesc folderul: {class_dir}. Verifică structura!")
+            raise FileNotFoundError(f"Can't find directory: {class_dir}. Check the paths!")
             
         for filename in os.listdir(class_dir):
             if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
                 all_paths.append(os.path.join(class_dir, filename))
                 all_labels.append(label)
 
-    
-    val_test_ratio = val_w + test_w 
+    val_test_ratio = val_w + test_w
     
     train_paths, temp_paths, train_labels, temp_labels = train_test_split(
         all_paths, all_labels, 
         test_size=val_test_ratio, 
-        random_state=42,       
-        stratify=all_labels    
+        random_state=42,
+        stratify=all_labels
     )
 
-    
-    
+
     test_ratio_relative = test_w / val_test_ratio 
 
     val_paths, test_paths, val_labels, test_labels = train_test_split(
@@ -72,8 +66,8 @@ def save_learning_curves(history):
     plt.subplot(1, 2, 1)
     plt.plot(history['train_loss'], label='Train Loss')
     plt.plot(history['val_loss'], label='Val Loss')
-    plt.title('Evoluția Loss-ului')
-    plt.xlabel('Epocă')
+    plt.title('Loss Evolution')
+    plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
     plt.grid(True)
@@ -81,9 +75,9 @@ def save_learning_curves(history):
     
     plt.subplot(1, 2, 2)
     plt.plot(history['val_acc'], label='Val Accuracy', color='green')
-    plt.title('Evoluția Acurateței (Validare)')
-    plt.xlabel('Epocă')
-    plt.ylabel('Acuratețe (%)')
+    plt.title('Accuracy Evolution (Validation)')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy (%)')
     plt.legend()
     plt.grid(True)
 
@@ -94,24 +88,23 @@ def save_learning_curves(history):
 def main():
     
     model, criterion, optimizer, device = build_model()
-    print(f"Antrenăm pe: {device}")
+    print(f"Training on: {device}")
     DATASET_DIR = "E:\\disertatie\\dataset"
-    
+
     train_image_paths, train_labels, val_image_paths, val_labels, test_image_paths, test_labels = get_real_data(DATASET_DIR)
 
-    
+
     train_dataset = AIDetectionDataset(train_image_paths, train_labels, transform=train_transform)
     val_dataset = AIDetectionDataset(val_image_paths, val_labels, transform=val_transform)
     test_dataset = AIDetectionDataset(test_image_paths, test_labels, transform=val_transform)
 
-    
-    batch_size = 128 
+    batch_size = 128
     
     train_loader = DataLoader(
         train_dataset, 
         batch_size=batch_size, 
         shuffle=True, 
-        num_workers=8, 
+        num_workers=10,
         pin_memory=True,
         prefetch_factor=3
     )
@@ -120,7 +113,7 @@ def main():
         val_dataset, 
         batch_size=batch_size, 
         shuffle=False, 
-        num_workers=8,
+        num_workers=10,
         pin_memory=True
     )
     
@@ -132,7 +125,6 @@ def main():
         pin_memory=True
     )
 
-    
     num_epochs = 50
     patience = 7
     patience_counter = 0
@@ -140,7 +132,6 @@ def main():
     save_path = 'best_model.pth'
     
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=num_epochs)
-    
     scaler = torch.amp.GradScaler()
     
     
@@ -149,8 +140,9 @@ def main():
     'val_loss': [],
     'val_acc': []
     }
+    
     for epoch in range(num_epochs):
-        model.train() 
+        model.train()
         running_train_loss = 0.0
         
         for images, labels in train_loader:
@@ -172,13 +164,12 @@ def main():
             
         epoch_train_loss = running_train_loss / len(train_loader.dataset)
         
-        
-        model.eval() 
+        model.eval()
         running_val_loss = 0.0
         correct_preds = 0
         total_samples = 0
         
-        with torch.no_grad(): 
+        with torch.no_grad():
             for images, labels in val_loader:
                 images = images.to(device)
                 labels = labels.to(device)
@@ -187,7 +178,6 @@ def main():
                     outputs = model(images)
                     loss = criterion(outputs, labels)
                 running_val_loss += loss.item() * images.size(0)
-                
                 
                 _, predicted = torch.max(outputs, 1)
                 total_samples += labels.size(0)
@@ -210,25 +200,23 @@ def main():
         history['val_loss'].append(epoch_val_loss)
         history['val_acc'].append(val_accuracy)
         
-        
         if epoch_val_loss < best_val_loss:
             best_val_loss = epoch_val_loss
             torch.save(model.state_dict(), save_path)
-            print(f'   -> Model salvat! (Val Loss a scăzut la {best_val_loss:.4f})')
-            patience_counter = 0 
+            print(f'   -> Saved the model! (Val Loss dropped to {best_val_loss:.4f})')
+            patience_counter = 0
         else:
             patience_counter += 1
-            print(f'   -> Nicio îmbunătățire. Răbdare: {patience_counter}/{patience}')
+            print(f'   -> No improvement. Patience: {patience_counter}/{patience}')
             
         if patience_counter >= patience:
-            print(f"\n[!] Early Stopping declanșat la epoca {epoch+1}. Modelul a atins potențialul maxim.")
+            print(f"\n[!] Early Stopping triggered at epoch {epoch+1}. Model has reached its maximum potential.")
             break
 
     save_learning_curves(history)
-    print("\nAntrenament finalizat! Se rulează evaluarea detaliată...")
+    print("\nTraining completed! Running detailed evaluation...")
 
-    
-    
+
     model.load_state_dict(torch.load(save_path))
     
     

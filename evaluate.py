@@ -12,28 +12,23 @@ from sklearn.metrics import (
 )
 
 def evaluate_model(model, loader, device):
-    """
-    Evaluează modelul, optimizează pragul de decizie și salvează graficele de performanță.
-    Se recomandă folosirea pe test_loader la finalul antrenamentului.
-    """
+
     model.eval()
     all_probs = []
     all_labels = []
 
     print("\n" + "="*30)
-    print("ÎNCEPE EVALUAREA FINALĂ")
+    print("STARTING EVALUATION...")
     print("="*30)
-    print("Se extrag predicțiile din setul de date...")
+    print("Extracting predictions and probabilities from the model...")
 
     with torch.no_grad():
         for images, labels in loader:
             images = images.to(device)
             labels = labels.to(device)
 
-            
             with torch.autocast(device_type='cuda', dtype=torch.float16):
                 outputs = model(images)
-            
             
             probs = F.softmax(outputs, dim=1)[:, 1]
 
@@ -43,39 +38,30 @@ def evaluate_model(model, loader, device):
     all_probs = np.array(all_probs)
     all_labels = np.array(all_labels)
 
-    
-    
-    
+
     precisions, recalls, thresholds = precision_recall_curve(all_labels, all_probs)
     
-    
+
     f1_scores = 2 * (precisions * recalls) / (precisions + recalls + 1e-8)
     
-    
+
     best_idx = np.argmax(f1_scores)
-    
     best_threshold = thresholds[best_idx] if best_idx < len(thresholds) else thresholds[-1]
     
-    print(f"\n[Optimizare] Prag optim (Threshold) găsit: {best_threshold:.4f}")
-    print(f"[Optimizare] Cel mai bun F1 Score: {f1_scores[best_idx]:.4f}")
+    print(f"\n[Optimization] Most optimal threshold: {best_threshold:.4f}")
+    print(f"[Optimization] Best F1 Score: {f1_scores[best_idx]:.4f}")
 
-    
     optimized_preds = (all_probs >= best_threshold).astype(int)
 
-    
-    
-    
     roc_auc = roc_auc_score(all_labels, all_probs)
     print(f"ROC AUC Score: {roc_auc:.4f}")
     
-    print("\nRaport de Clasificare (folosind pragul optim):")
+    print("\nClassification Report (using the optimal threshold):")
     report = classification_report(all_labels, optimized_preds, target_names=['Real', 'AI'])
     print(report)
 
-    
-    
-    
-    print("Se generează graficele de performanță...")
+
+    print("Generating performance plots...")
     
     plt.figure(figsize=(20, 6))
     
@@ -106,12 +92,12 @@ def evaluate_model(model, loader, device):
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False,
                 xticklabels=['Real', 'AI'], yticklabels=['Real', 'AI'])
     plt.title(f'Confusion Matrix (Threshold: {best_threshold:.2f})')
-    plt.xlabel('Predicție Model')
-    plt.ylabel('Clasă Reală')
+    plt.xlabel('Model Prediction')
+    plt.ylabel('True Class')
 
     plt.tight_layout()
     plt.savefig('model_performance.png', dpi=300) 
     plt.show()
 
-    print("\n[Succes] Graficul 'model_performance.png' a fost salvat.")
+    print("\n[Succes] Evaluation completed! Performance plots saved as 'model_performance.png'.")
     print("="*30 + "\n")
