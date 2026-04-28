@@ -42,4 +42,4 @@ class AIDetectionDataset(Dataset):
             augmented = self.transform(image=image)
             image = augmented['image']
 
-        return image, label
+        return image, label, img_path

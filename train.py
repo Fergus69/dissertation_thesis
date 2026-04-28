@@ -6,8 +6,13 @@ from model import build_model
 
 
 from dataset import AIDetectionDataset, train_transform, val_transform
-from evaluate import evaluate_model
+from evaluate import evaluate_model, get_optimal_threshold, visualize_errors
 import matplotlib.pyplot as plt
+import cv2
+import numpy as np
+
+cv2.setNumThreads(0)  
+torch.backends.cudnn.benchmark = True
 
 def get_real_data(dataset_path, weights=(0.70, 0.15, 0.15)):
     train_w, val_w, test_w = weights
@@ -88,12 +93,22 @@ def save_learning_curves(history):
 def main():
     
     model, criterion, optimizer, device = build_model()
+
     print(f"Training on: {device}")
-    DATASET_DIR = "E:\\disertatie\\dataset"
+    DATASET_DIR = "D:\\dataset"
 
     train_image_paths, train_labels, val_image_paths, val_labels, test_image_paths, test_labels = get_real_data(DATASET_DIR)
 
-
+    class_counts = np.bincount(train_labels)
+    total_samples = len(train_labels)
+    
+    weights = total_samples / (2.0 * class_counts)
+    class_weights = torch.tensor(weights, dtype=torch.float).to(device)
+    
+    print(f"Calculated class weights: Real={weights[0]:.4f}, AI={weights[1]:.4f}")
+    
+    criterion = torch.nn.CrossEntropyLoss(weight=class_weights)
+    
     train_dataset = AIDetectionDataset(train_image_paths, train_labels, transform=train_transform)
     val_dataset = AIDetectionDataset(val_image_paths, val_labels, transform=val_transform)
     test_dataset = AIDetectionDataset(test_image_paths, test_labels, transform=val_transform)
@@ -104,16 +119,18 @@ def main():
         train_dataset, 
         batch_size=batch_size, 
         shuffle=True, 
-        num_workers=10,
+        num_workers=6,
         pin_memory=True,
-        prefetch_factor=3
+        persistent_workers=True,
+        prefetch_factor=4
     )
     
     val_loader = DataLoader(
         val_dataset, 
         batch_size=batch_size, 
         shuffle=False, 
-        num_workers=10,
+        num_workers=6,
+        persistent_workers=True,
         pin_memory=True
     )
     
@@ -121,7 +138,8 @@ def main():
         test_dataset, 
         batch_size=batch_size, 
         shuffle=False, 
-        num_workers=8,
+        num_workers=6,
+        persistent_workers=True,
         pin_memory=True
     )
 
@@ -145,9 +163,9 @@ def main():
         model.train()
         running_train_loss = 0.0
         
-        for images, labels in train_loader:
-            images = images.to(device)
-            labels = labels.to(device)
+        for images, labels, _ in train_loader:
+            images = images.to(device, non_blocking=True)
+            labels = labels.to(device, non_blocking=True)
 
             optimizer.zero_grad() 
             
@@ -170,10 +188,10 @@ def main():
         total_samples = 0
         
         with torch.no_grad():
-            for images, labels in val_loader:
-                images = images.to(device)
-                labels = labels.to(device)
-                
+            for images, labels, _ in val_loader:
+                images = images.to(device, non_blocking=True)
+                labels = labels.to(device, non_blocking=True)
+
                 with torch.autocast(device_type='cuda', dtype=torch.float16):
                     outputs = model(images)
                     loss = criterion(outputs, labels)
@@ -218,9 +236,10 @@ def main():
 
 
     model.load_state_dict(torch.load(save_path))
+    best_thr = get_optimal_threshold(model, val_loader, device)
     
-    
-    evaluate_model(model, test_loader, device)
+    evaluate_model(model, test_loader, device, threshold=best_thr)
+    visualize_errors(model, test_loader, device, threshold=best_thr, max_images=5)
 
 if __name__ == '__main__':
     main()
