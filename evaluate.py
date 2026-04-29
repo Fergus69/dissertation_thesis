@@ -88,10 +88,6 @@ def visualize_errors(model, loader, device, threshold=0.5, max_images=10):
     
     
 def get_optimal_threshold(model, loader, device):
-    """
-    Calculates the best threshold on a specific loader (e.g., Validation Set)
-    to maximize the F1 Score.
-    """
     model.eval()
     all_probs, all_labels = [], []
     
@@ -110,15 +106,14 @@ def get_optimal_threshold(model, loader, device):
     all_probs = np.array(all_probs)
     all_labels = np.array(all_labels)
     
-    precisions, recalls, thresholds = precision_recall_curve(all_labels, all_probs)
-    f1_scores = 2 * (precisions * recalls) / (precisions + recalls + 1e-8)
     
-    best_idx = np.argmax(f1_scores)
+    fpr, tpr, thresholds = roc_curve(all_labels, all_probs)
+    j_scores = tpr - fpr
     
+    best_idx = np.argmax(j_scores)
+    best_threshold = thresholds[best_idx]
     
-    best_threshold = thresholds[best_idx] if best_idx < len(thresholds) else thresholds[-1]
-    
-    print(f"Optimal threshold found: {best_threshold:.4f} with F1: {f1_scores[best_idx]:.4f}")
+    print(f"Optimal threshold (Youden's J) found: {best_threshold:.4f}")
     return best_threshold
 
 def evaluate_model(model, loader, device, threshold=0.5):
@@ -197,3 +192,86 @@ def evaluate_model(model, loader, device, threshold=0.5):
     plt.show()
 
     print("\n[Success] Evaluation completed. Plots saved as 'model_performance.png'.")
+    
+
+def evaluate_model_tta(model, loader, device, threshold=0.5):
+    """
+    Evaluează modelul folosind metoda 5-Crop Test-Time Augmentation.
+    """
+    model.eval()
+    all_probs = []
+    all_labels = []
+
+    print("\n" + "="*50)
+    print(f"STARTING 5-CROP TTA EVALUATION (Threshold: {threshold:.2f})")
+    print("="*50)
+
+    with torch.no_grad():
+        for stacked_crops, labels, _ in loader:
+            
+            batch_size, num_crops, c, h, w = stacked_crops.size()
+            
+            
+            
+            inputs = stacked_crops.view(-1, c, h, w).to(device)
+            labels = labels.to(device)
+
+            with torch.autocast(device_type='cuda', dtype=torch.float16):
+                outputs = model(inputs)
+            
+            
+            probs = F.softmax(outputs, dim=1)[:, 1]
+            
+            
+            probs_reshaped = probs.view(batch_size, num_crops)
+            avg_probs = probs_reshaped.mean(dim=1)
+            
+            all_probs.extend(avg_probs.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
+
+    all_probs = np.array(all_probs)
+    all_labels = np.array(all_labels)
+
+    optimized_preds = (all_probs >= threshold).astype(int)
+
+    roc_auc = roc_auc_score(all_labels, all_probs)
+    print(f"ROC AUC Score: {roc_auc:.4f}")
+    print(f"\nClassification Report (Fixed Threshold: {threshold:.4f}):")
+    print(classification_report(all_labels, optimized_preds, target_names=['Real', 'AI']))
+
+    plt.figure(figsize=(20, 6))
+    
+    
+    fpr, tpr, _ = roc_curve(all_labels, all_probs)
+    plt.subplot(1, 3, 1)
+    plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'AUC = {roc_auc:.3f}')
+    plt.plot([0, 1], [0, 1], color='navy', lw=1, linestyle='--')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC Curve (5-Crop TTA)')
+    plt.legend(loc="lower right")
+    plt.grid(alpha=0.3)
+
+    
+    precisions, recalls, _ = precision_recall_curve(all_labels, all_probs)
+    plt.subplot(1, 3, 2)
+    plt.plot(recalls, precisions, color='blue', lw=2)
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.title('Precision-Recall Curve (5-Crop TTA)')
+    plt.grid(alpha=0.3)
+
+    
+    plt.subplot(1, 3, 3)
+    cm = confusion_matrix(all_labels, optimized_preds)
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False,
+                xticklabels=['Real', 'AI'], yticklabels=['Real', 'AI'])
+    plt.title(f'Confusion Matrix (Threshold: {threshold:.2f})')
+    plt.xlabel('Model Prediction')
+    plt.ylabel('True Class')
+
+    plt.tight_layout()
+    plt.savefig('tta_model_performance.png', dpi=300)
+    plt.show()
+
+    print("\n[Success] Evaluarea TTA finalizată. Graficele au fost salvate.")

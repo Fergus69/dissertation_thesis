@@ -5,8 +5,8 @@ from torch.utils.data import DataLoader
 from model import build_model
 
 
-from dataset import AIDetectionDataset, train_transform, val_transform
-from evaluate import evaluate_model, get_optimal_threshold, visualize_errors
+from dataset import AIDetectionDataset, TTADetectionDataset, train_transform, val_transform
+from evaluate import evaluate_model, evaluate_model_tta, get_optimal_threshold, visualize_errors
 import matplotlib.pyplot as plt
 import cv2
 import numpy as np
@@ -142,6 +142,20 @@ def main():
         persistent_workers=True,
         pin_memory=True
     )
+    
+    tta_test_dataset = TTADetectionDataset(
+        test_image_paths, 
+        test_labels, 
+        crop_size=224
+    )
+    tta_test_loader = DataLoader(
+        tta_test_dataset, 
+        batch_size=batch_size, 
+        shuffle=False, 
+        num_workers=6,
+        persistent_workers=True,
+        pin_memory=True
+    )
 
     num_epochs = 50
     patience = 7
@@ -233,13 +247,16 @@ def main():
 
     save_learning_curves(history)
     print("\nTraining completed! Running detailed evaluation...")
-
-
+    
+    tta=1
     model.load_state_dict(torch.load(save_path))
     best_thr = get_optimal_threshold(model, val_loader, device)
     
-    evaluate_model(model, test_loader, device, threshold=best_thr)
-    visualize_errors(model, test_loader, device, threshold=best_thr, max_images=5)
+    if tta==0:
+        evaluate_model(model, test_loader, device, threshold=best_thr)
+        visualize_errors(model, test_loader, device, threshold=best_thr, max_images=5)
+    else:
+        evaluate_model_tta(model, tta_test_loader, device, threshold=0.5)
 
 if __name__ == '__main__':
     main()
