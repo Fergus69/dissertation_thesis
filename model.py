@@ -4,7 +4,7 @@ import torch.nn as nn
 
 def build_model():
     model = timm.create_model(
-        'tf_efficientnetv2_s', 
+        'convnext_tiny.fb_in22k_ft_in1k', 
         pretrained=True,       
         num_classes=2          
     )
