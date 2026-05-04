@@ -1,0 +1,116 @@
+Epoca 01/50 | LR: 0.000100 | Train Loss: 0.6576 | Val Loss: 0.4908 | Val Acc: 76.21%
+   -> Saved the model! (Val Loss dropped to 0.4908)
+Epoca 02/50 | LR: 0.000100 | Train Loss: 0.5011 | Val Loss: 0.4446 | Val Acc: 80.06%
+   -> Saved the model! (Val Loss dropped to 0.4446)
+Epoca 03/50 | LR: 0.000100 | Train Loss: 0.4190 | Val Loss: 0.3948 | Val Acc: 78.78%
+   -> Saved the model! (Val Loss dropped to 0.3948)
+Epoca 04/50 | LR: 0.000099 | Train Loss: 0.3351 | Val Loss: 0.3778 | Val Acc: 81.99%
+   -> Saved the model! (Val Loss dropped to 0.3778)
+Epoca 05/50 | LR: 0.000098 | Train Loss: 0.3071 | Val Loss: 0.3401 | Val Acc: 83.60%
+   -> Saved the model! (Val Loss dropped to 0.3401)
+Epoca 06/50 | LR: 0.000098 | Train Loss: 0.2893 | Val Loss: 0.3414 | Val Acc: 84.57%
+   -> No improvement. Patience: 1/7
+Epoca 07/50 | LR: 0.000096 | Train Loss: 0.2562 | Val Loss: 0.2558 | Val Acc: 90.68%
+   -> Saved the model! (Val Loss dropped to 0.2558)
+Epoca 08/50 | LR: 0.000095 | Train Loss: 0.2134 | Val Loss: 0.2307 | Val Acc: 90.68%
+   -> Saved the model! (Val Loss dropped to 0.2307)
+Epoca 09/50 | LR: 0.000094 | Train Loss: 0.2162 | Val Loss: 0.2272 | Val Acc: 90.03%
+   -> Saved the model! (Val Loss dropped to 0.2272)
+Epoca 10/50 | LR: 0.000092 | Train Loss: 0.2039 | Val Loss: 0.2619 | Val Acc: 89.39%
+   -> No improvement. Patience: 1/7
+Epoca 11/50 | LR: 0.000090 | Train Loss: 0.2261 | Val Loss: 0.2481 | Val Acc: 91.00%
+   -> No improvement. Patience: 2/7
+Epoca 12/50 | LR: 0.000089 | Train Loss: 0.1874 | Val Loss: 0.2148 | Val Acc: 92.28%
+   -> Saved the model! (Val Loss dropped to 0.2148)
+Epoca 13/50 | LR: 0.000086 | Train Loss: 0.1571 | Val Loss: 0.2331 | Val Acc: 90.35%
+   -> No improvement. Patience: 1/7
+Epoca 14/50 | LR: 0.000084 | Train Loss: 0.1521 | Val Loss: 0.2379 | Val Acc: 91.96%
+   -> No improvement. Patience: 2/7
+Epoca 15/50 | LR: 0.000082 | Train Loss: 0.1917 | Val Loss: 0.2621 | Val Acc: 88.42%
+   -> No improvement. Patience: 3/7
+Epoca 16/50 | LR: 0.000079 | Train Loss: 0.1749 | Val Loss: 0.2403 | Val Acc: 91.64%
+   -> No improvement. Patience: 4/7
+Epoca 17/50 | LR: 0.000077 | Train Loss: 0.1566 | Val Loss: 0.2027 | Val Acc: 92.60%
+   -> Saved the model! (Val Loss dropped to 0.2027)
+Epoca 18/50 | LR: 0.000074 | Train Loss: 0.1523 | Val Loss: 0.2102 | Val Acc: 92.28%
+   -> No improvement. Patience: 1/7
+Epoca 19/50 | LR: 0.000071 | Train Loss: 0.1234 | Val Loss: 0.2031 | Val Acc: 92.60%
+   -> No improvement. Patience: 2/7
+Epoca 20/50 | LR: 0.000068 | Train Loss: 0.1264 | Val Loss: 0.2263 | Val Acc: 91.96%
+   -> No improvement. Patience: 3/7
+Epoca 21/50 | LR: 0.000065 | Train Loss: 0.1218 | Val Loss: 0.1870 | Val Acc: 93.57%
+   -> Saved the model! (Val Loss dropped to 0.1870)
+Epoca 22/50 | LR: 0.000062 | Train Loss: 0.1061 | Val Loss: 0.1927 | Val Acc: 94.21%
+   -> No improvement. Patience: 1/7
+Epoca 23/50 | LR: 0.000059 | Train Loss: 0.1024 | Val Loss: 0.1932 | Val Acc: 93.89%
+   -> No improvement. Patience: 2/7
+Epoca 24/50 | LR: 0.000056 | Train Loss: 0.1140 | Val Loss: 0.2214 | Val Acc: 91.96%
+   -> No improvement. Patience: 3/7
+Epoca 25/50 | LR: 0.000053 | Train Loss: 0.0964 | Val Loss: 0.2140 | Val Acc: 92.93%
+   -> No improvement. Patience: 4/7
+Epoca 26/50 | LR: 0.000050 | Train Loss: 0.0977 | Val Loss: 0.2078 | Val Acc: 92.93%
+   -> No improvement. Patience: 5/7
+Epoca 27/50 | LR: 0.000047 | Train Loss: 0.1097 | Val Loss: 0.1868 | Val Acc: 92.28%
+   -> Saved the model! (Val Loss dropped to 0.1868)
+Epoca 28/50 | LR: 0.000044 | Train Loss: 0.1075 | Val Loss: 0.2222 | Val Acc: 93.25%
+   -> No improvement. Patience: 1/7
+Epoca 29/50 | LR: 0.000041 | Train Loss: 0.1031 | Val Loss: 0.2215 | Val Acc: 92.93%
+   -> No improvement. Patience: 2/7
+Epoca 30/50 | LR: 0.000038 | Train Loss: 0.1075 | Val Loss: 0.2145 | Val Acc: 91.64%
+   -> No improvement. Patience: 3/7
+Epoca 31/50 | LR: 0.000035 | Train Loss: 0.0947 | Val Loss: 0.1884 | Val Acc: 93.25%
+   -> No improvement. Patience: 4/7
+Epoca 32/50 | LR: 0.000032 | Train Loss: 0.0904 | Val Loss: 0.1856 | Val Acc: 92.28%
+   -> Saved the model! (Val Loss dropped to 0.1856)
+Epoca 33/50 | LR: 0.000029 | Train Loss: 0.0804 | Val Loss: 0.1818 | Val Acc: 93.25%
+   -> Saved the model! (Val Loss dropped to 0.1818)
+Epoca 34/50 | LR: 0.000026 | Train Loss: 0.0906 | Val Loss: 0.1879 | Val Acc: 93.57%
+   -> No improvement. Patience: 1/7
+Epoca 35/50 | LR: 0.000023 | Train Loss: 0.1047 | Val Loss: 0.2077 | Val Acc: 93.25%
+   -> No improvement. Patience: 2/7
+Epoca 36/50 | LR: 0.000021 | Train Loss: 0.0846 | Val Loss: 0.1815 | Val Acc: 94.21%
+   -> Saved the model! (Val Loss dropped to 0.1815)
+Epoca 37/50 | LR: 0.000018 | Train Loss: 0.0727 | Val Loss: 0.1799 | Val Acc: 93.25%
+   -> Saved the model! (Val Loss dropped to 0.1799)
+Epoca 38/50 | LR: 0.000016 | Train Loss: 0.0794 | Val Loss: 0.1982 | Val Acc: 93.57%
+   -> No improvement. Patience: 1/7
+Epoca 39/50 | LR: 0.000014 | Train Loss: 0.0640 | Val Loss: 0.2166 | Val Acc: 93.25%
+   -> No improvement. Patience: 2/7
+Epoca 40/50 | LR: 0.000011 | Train Loss: 0.0742 | Val Loss: 0.2061 | Val Acc: 92.60%
+   -> No improvement. Patience: 3/7
+Epoca 41/50 | LR: 0.000010 | Train Loss: 0.0793 | Val Loss: 0.2044 | Val Acc: 93.25%
+   -> No improvement. Patience: 4/7
+Epoca 42/50 | LR: 0.000008 | Train Loss: 0.0820 | Val Loss: 0.1995 | Val Acc: 92.60%
+   -> No improvement. Patience: 5/7
+Epoca 43/50 | LR: 0.000006 | Train Loss: 0.0798 | Val Loss: 0.2033 | Val Acc: 92.28%
+   -> No improvement. Patience: 6/7
+Epoca 44/50 | LR: 0.000005 | Train Loss: 0.0765 | Val Loss: 0.2027 | Val Acc: 92.28%
+   -> No improvement. Patience: 7/7
+
+[!] Early Stopping triggered at epoch 44. Model has reached its maximum potential.
+
+[Grafic] 'learning_curves.png' a fost salvat.
+
+Training completed! Running detailed evaluation...
+e:\disertatie\code\train.py:252: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  model.load_state_dict(torch.load(save_path))
+Finding optimal threshold on the provided loader...
+Optimal threshold (Youden's J) found: 0.4133
+
+==================================================
+STARTING 5-CROP TTA EVALUATION (Threshold: 0.50)
+==================================================
+ROC AUC Score: 0.9863
+
+Classification Report (Fixed Threshold: 0.5000):
+              precision    recall  f1-score   support
+
+        Real       0.90      0.97      0.94       154
+          AI       0.97      0.90      0.93       158
+
+    accuracy                           0.94       312
+   macro avg       0.94      0.94      0.94       312
+weighted avg       0.94      0.94      0.94       312
+
+
+***BEST OF THE BEST***
