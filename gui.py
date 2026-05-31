@@ -227,7 +227,7 @@ def alg():
 
         
         if prob_ai > 0.5:
-            text = f"DEEPFAKE (TTA: {prob_ai * 100:.1f}%)"
+            text = f"AI (TTA: {prob_ai * 100:.1f}%)"
         else:
             text = f"REAL (TTA: {(1 - prob_ai) * 100:.1f}%)"
 
