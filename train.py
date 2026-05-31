@@ -4,7 +4,6 @@ import torch
 from torch.utils.data import DataLoader
 from model import build_model
 
-
 from dataset import AIDetectionDataset, TTADetectionDataset, train_transform, val_transform
 from evaluate import evaluate_model, evaluate_model_tta, get_optimal_threshold, visualize_errors
 import matplotlib.pyplot as plt
@@ -17,16 +16,13 @@ torch.backends.cudnn.benchmark = True
 def get_real_data(dataset_path, weights=(0.70, 0.15, 0.15)):
     train_w, val_w, test_w = weights
     
-    
     assert abs(train_w + val_w + test_w - 1.0) < 1e-5, "Weights must sum to 1.0"
 
     all_paths = []
     all_labels = []
 
-    
     classes = {'real': 0, 'ai': 1}
 
-    
     for class_name, label in classes.items():
         class_dir = os.path.join(dataset_path, class_name)
         
@@ -67,7 +63,6 @@ def get_real_data(dataset_path, weights=(0.70, 0.15, 0.15)):
 def save_learning_curves(history):
     plt.figure(figsize=(12, 5))
     
-    
     plt.subplot(1, 2, 1)
     plt.plot(history['train_loss'], label='Train Loss')
     plt.plot(history['val_loss'], label='Val Loss')
@@ -106,7 +101,6 @@ def main():
     class_weights = torch.tensor(weights, dtype=torch.float).to(device)
     
     print(f"Calculated class weights: Real={weights[0]:.4f}, AI={weights[1]:.4f}")
-    
     criterion = torch.nn.CrossEntropyLoss(weight=class_weights)
     
     train_dataset = AIDetectionDataset(train_image_paths, train_labels, transform=train_transform)
@@ -165,7 +159,6 @@ def main():
     
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=num_epochs)
     scaler = torch.amp.GradScaler()
-    
     
     history = {
     'train_loss': [],
@@ -251,7 +244,6 @@ def main():
     tta=1
     model.load_state_dict(torch.load(save_path))
     best_thr = get_optimal_threshold(model, val_loader, device)
-    
     if tta==0:
         evaluate_model(model, test_loader, device, threshold=best_thr)
         visualize_errors(model, test_loader, device, threshold=best_thr, max_images=5)

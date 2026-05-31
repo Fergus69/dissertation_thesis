@@ -4,9 +4,9 @@ import shutil
 import cv2
 import torch
 import torch.nn as nn
-from PIL import Image, ImageTk 
+from PIL import Image, ImageTk
 from torchvision import transforms
-import timm  
+import timm 
 from pathlib import Path
 from tkinter import Button, Canvas, PhotoImage, Text, Tk, filedialog, messagebox
 import tkinter as tk
@@ -15,17 +15,12 @@ import tkinter as tk
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path('./assets/frame0')
 
-
 device_pt = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def load_timm_model(checkpoint_path):
-    
-    
     model = timm.create_model('convnext_tiny', pretrained=False, num_classes=2)
     
-    
     try:
-        
         state_dict = torch.load(checkpoint_path, map_location=device_pt, weights_only=True)
         model.load_state_dict(state_dict)
         model.to(device_pt)
@@ -35,7 +30,6 @@ def load_timm_model(checkpoint_path):
     except Exception as e:
         print(f"Eroare la încărcarea modelului: {e}")
         return None
-
 
 model_pt = load_timm_model("./best_model.pth")
 
@@ -59,9 +53,7 @@ def select_file():
 def count_items_in_folder(folder_path):
     """ Counts the number of items in the given folder. """
     try:
-        
         items = os.listdir(folder_path)
-        
         return len(items)
     except FileNotFoundError:
         print("The folder does not exist.")
@@ -85,16 +77,15 @@ def resize_images_in_same_folder(folder_path, size=(256, 256)):
         if file.is_file() and file.suffix in ['.jpg', '.jpeg', '.png']:
             try:
                 img = Image.open(file)
-                
                 img = img.resize(size, Image.Resampling.LANCZOS)
-                img.save(file)  
+                img.save(file)
                 print(f"Resized and saved {file.name}")
             except Exception as e:
                 print(f"Failed to resize {file.name}. Reason: {e}")
 
 
 def delete_image():
-    canvas.delete(image_2)  
+    canvas.delete(image_2) 
 
 
 
@@ -104,21 +95,16 @@ def create_image(folder_path):
         if file.is_file() and file.suffix.lower() in ['.jpg', '.jpeg', '.png']:
             path = str(file)
             try:
-                
                 img_pil = Image.open(path)
-                
                 
                 poza = ImageTk.PhotoImage(img_pil)
                 
                 global image_2 
-                
-                
                 image_2 = canvas.create_image(
                     581.0,
                     377.0,
                     image=poza
                 )
-                
                 
                 canvas.image = poza 
                 
@@ -143,37 +129,24 @@ picture_folder = './build/assets/picture'
 predict_folder = './build/assets/predict/predict'
 
 def button_2_func():
-    
     os.makedirs(picture_folder, exist_ok=True)
     os.makedirs(predict_folder, exist_ok=True)
-    
     
     clear_directory(picture_folder)
     clear_directory(predict_folder)
     
     result = select_file()
-    if result: 
+    if result:
         fisier, suffix = result 
-        
-        
         filename = os.path.basename(fisier) 
-        
         shutil.copy(fisier, os.path.join(picture_folder, filename))
         shutil.copy(fisier, os.path.join(predict_folder, filename))
-        
-        
         resize_images_in_same_folder(picture_folder, (543, 635))
         delete_image()
         create_image(picture_folder)
-        
-        
-        
-        
         textbox.configure(state='normal')
         textbox.delete('1.0', tk.END)
         textbox.configure(state='disabled')
-
-
 
 
 
@@ -182,13 +155,10 @@ def alg():
         messagebox.showerror("Eroare", "Modelul nu este încărcat!")
         return
 
-    
-    
     crop_size = 224 
     
     tta_preprocess = transforms.Compose([
-        
-        transforms.FiveCrop(crop_size), 
+        transforms.FiveCrop(crop_size),
         transforms.Lambda(lambda crops: torch.stack([
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])(
                 transforms.ToTensor()(crop)
@@ -196,7 +166,6 @@ def alg():
         ]))
     ])
 
-    
     img_path = None
     for file in Path(predict_folder).iterdir():
         if file.suffix.lower() in ['.jpg', '.jpeg', '.png']:
@@ -208,24 +177,19 @@ def alg():
         return
 
     try:
-        
         img = Image.open(img_path).convert('RGB')
-        
         
         if img.width < crop_size or img.height < crop_size:
             messagebox.showerror("Eroare", f"Imaginea este prea mică pentru analiza TTA ({img.width}x{img.height}).")
             return
 
-        
         input_batch = tta_preprocess(img).to(device_pt) 
 
         with torch.no_grad():
             outputs = model_pt(input_batch) 
-            
             probs = torch.nn.functional.softmax(outputs, dim=1)[:, 1]
             prob_ai = probs.mean().item()
 
-        
         if prob_ai > 0.5:
             text = f"AI (TTA: {prob_ai * 100:.1f}%)"
         else:
@@ -319,7 +283,7 @@ textbox = Text(
     relief="solid"
 )
 textbox.place(x=460, y=750)  
-textbox.configure(state='disabled')  
+textbox.configure(state='disabled') 
 
 
 window.resizable(False, False)
