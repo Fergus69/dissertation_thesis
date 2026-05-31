@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 
-cv2.setNumThreads(0)  
+cv2.setNumThreads(0)   
 torch.backends.cudnn.benchmark = True
 
 def get_real_data(dataset_path, weights=(0.70, 0.15, 0.15)):
@@ -72,7 +72,7 @@ def save_learning_curves(history):
     plt.legend()
     plt.grid(True)
 
-    
+
     plt.subplot(1, 2, 2)
     plt.plot(history['val_acc'], label='Val Accuracy', color='green')
     plt.title('Accuracy Evolution (Validation)')
