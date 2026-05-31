@@ -8,7 +8,7 @@ import torch
 
 train_transform = A.Compose([
     A.RandomCrop(width=224, height=224),
-    A.HorizontalFlip(p=0.5),
+    A.HorizontalFlip(p=0.5),a
     A.Rotate(limit=10, p=0.5),
     A.ImageCompression(quality_range=(60, 90), p=0.5),
     A.ColorJitter(brightness=0.1, contrast=0.1, saturation=0, hue=0, p=0.5),
