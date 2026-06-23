@@ -18,7 +18,7 @@ ASSETS_PATH = OUTPUT_PATH / Path('./assets/frame0')
 device_pt = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def load_timm_model(checkpoint_path):
-    model = timm.create_model('convnext_tiny', pretrained=False, num_classes=2)
+    model = timm.create_model('convnext_tiny.fb_in22k_ft_in1k', pretrained=False, num_classes=2)
     
     try:
         state_dict = torch.load(checkpoint_path, map_location=device_pt, weights_only=True)
